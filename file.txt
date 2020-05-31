@@ -1,0 +1,4 @@
+cat dog
+cat cat
+dog cow
+dog dog cat cow
