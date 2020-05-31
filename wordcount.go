@@ -61,37 +61,29 @@ func main() {
 		fmt.Println("Not enough input arguments")
 	} else if len(strings.Split(text, " ")) == 2 {
 		command := strings.TrimSpace(strings.Split(text, " ")[0])
-		path := strings.TrimSpace(strings.Split(text, " ")[1])
+		path := "./" + strings.TrimSpace(strings.Split(text, " ")[1])
+
 		if command == "--lines" || command == "--symbols" || command == "--words" || command == "--unique_words" {
+			res, _ := readFromFile(path) //получаем массив строк из файла
+
 			if command == "--lines" {
-				count, err := countLines("./" + path)
-				if err != nil {
-					panic(err)
-				}
-				fmt.Println(count)
+				fmt.Println(countLines(res))
 			}
 
 			if command == "--symbols" {
-				count, err := countSymbols("./" + path)
-				if err != nil {
-					panic(err)
-				}
-				fmt.Println(count)
+				fmt.Println(countSymbols(res))
 			}
 
 			if command == "--words" {
-				words, err := scanWords("./" + path)
-				if err != nil {
-					panic(err)
-				}
-
-				fmt.Println(len(words))
+				fmt.Println(countWords(res))
 			}
 
 			if command == "--unique_words" {
-				words, err := scanWords("./" + path)
-				if err != nil {
-					panic(err)
+				var words []string
+				for _, line := range res {
+					for _, word := range strings.Split(line, " ") {
+						words = append(words, word)
+					}
 				}
 
 				var a *Tree
@@ -119,56 +111,37 @@ func main() {
 	}
 }
 
-func countLines(path string) (int, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return 0, err
-	}
-
-	defer file.Close()
-	count := 0
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		count++
-	}
-	return count, nil
-}
-
-func countSymbols(path string) (int, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return 0, err
-	}
-
-	defer file.Close()
-	count := 0
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		count = count + len(scanner.Text())
-	}
-	return count, nil
-}
-
-func scanWords(path string) ([]string, error) {
-
+func readFromFile(path string) ([]string, error) {
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 
 	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-
-	scanner.Split(bufio.ScanWords)
-
-	var words []string
-
-	for scanner.Scan() {
-		words = append(words, scanner.Text())
+	var res []string
+	rd := bufio.NewScanner(file)
+	for rd.Scan() {
+		res = append(res, rd.Text())
 	}
+	return res, nil
+}
 
-	return words, nil
+func countLines(lines []string) int {
+	return len(lines)
+}
+
+func countSymbols(lines []string) int {
+	count := 0
+	for _, line := range lines {
+		count = count + len(line)
+	}
+	return count
+}
+
+func countWords(lines []string) int {
+	count := 0
+	for _, line := range lines {
+		count = count + len(strings.Split(line, " "))
+	}
+	return count
 }
